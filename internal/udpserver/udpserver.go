@@ -47,9 +47,14 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 		return
 	}
 
+	if len > 10000 {
+		u.logger.Info().Msgf("rec %s", addr) // чтобы не ругался на addr
+	}
 	// log.Printf("r:%d addr=%s, r:%s ", len, addr, string(buf[:len]))
-	u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
+	// u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
 	// conn.WriteToUDP(append([]byte("Hello, you said: "), buf[:readLen]...), addr) // пишем в сокет
+	s := string(buf[:len])
+	u.save(s)
 }
 
 func (u *UdpServer) udp_start(ctx context.Context) {
