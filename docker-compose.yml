@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  go_logs:
+    build: .
+    container_name: go_logs
+    restart: unless-stopped
+    ports:
+      - 0.0.0.0:${UDP_PORT}:${UDP_PORT}/udp
+      # - 31021:31021
+    environment:
+      - UDP_HOST=${UDP_HOST}
+      - UDP_PORT=${UDP_PORT}
+    volumes:
+      - ./logs:/logs
+    logging:
+      options:
+        max-size: 10m
