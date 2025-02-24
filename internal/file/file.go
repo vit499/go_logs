@@ -100,7 +100,16 @@ func (m *Mfile) Write(buf []byte) {
 	}
 
 	defer f.Close()
-	f.Write(buf)
+	_, err = f.Write(buf)
+	if err != nil {
+		m.logger.Info().Msgf("err append file, %v", err)
+		return
+	}
+	err = f.Sync()
+	if err != nil {
+		m.logger.Info().Msgf("err sync file, %v", err)
+		return
+	}
 
 	fi, err := f.Stat() // проверяем размер файла
 	if err != nil {
