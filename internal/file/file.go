@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go_logs/pkg/logger"
 	"go_logs/pkg/utils"
+	"io"
 	"os"
 )
 
@@ -99,21 +100,29 @@ func (m *Mfile) Write(buf []byte) {
 	}
 	sz := fi.Size()
 	if sz > int64(maxSize) {
-		m.logger.Info().Msgf("close file, sz = %d", sz)
+		m.logger.Info().Msgf("copy file, sz = %d", sz)
 		fname1 := m.get_new_filename()
-		// f1, err := os.OpenFile(fname1, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0666)
-		// if err != nil {
-		// 	m.logger.Info().Msgf("err create file, %v", err)
-		// 	return
-		// }
-		f.Close()
-		err := os.Rename(m.fname, fname1)
+		f1, err := os.OpenFile(fname1, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0666)
 		if err != nil {
-			fmt.Println(err)
+			m.logger.Info().Msgf("err create file, %v", err)
+			return
+		}
+		// f.Close()
+		// err := os.Rename(m.fname, fname1)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+
+		defer f1.Close()
+		m.ended = true
+		_, err = io.Copy(f1, f)
+		if err != nil {
+			m.logger.Info().Msgf("err copy file, %v", err)
 		}
 
-		// defer f1.Close()
-		m.ended = true
+		// _, err = f.Seek(0, 0)
+
+		// err = f.Truncate(0)
 
 	}
 
