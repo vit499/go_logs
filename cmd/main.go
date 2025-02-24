@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go_logs/internal/file"
 	"go_logs/internal/udpserver"
 	"go_logs/pkg/config"
 	"go_logs/pkg/logger"
@@ -27,7 +28,8 @@ func run() error {
 
 	log.Printf("ctx %+v", ctx)
 
-	udpserver.New(ctx, l)
+	f := file.New(ctx, l)
+	udpserver.New(ctx, l, f)
 
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt)

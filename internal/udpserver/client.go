@@ -34,7 +34,7 @@ func (u *UdpServer) send() {
 	defer conn.Close()
 
 	// write a message to server
-	message := []byte("Hello UDP server!")
+	message := []byte("\r\n xxxxxxxxxxx aaaaaaaaaaaaa ccccccccccc 0000000000000 549305893458 ")
 
 	_, err = conn.Write(message)
 
@@ -52,7 +52,7 @@ func (u *UdpServer) send() {
 }
 
 func (u *UdpServer) client(ctx context.Context) {
-	ticker := time.NewTicker(time.Duration(2) * time.Second)
+	ticker := time.NewTicker(time.Duration(1) * time.Second)
 	defer ticker.Stop()
 
 	for {

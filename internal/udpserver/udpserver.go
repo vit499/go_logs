@@ -3,6 +3,7 @@ package udpserver
 import (
 	"context"
 	"fmt"
+	"go_logs/internal/file"
 	"go_logs/pkg/config"
 	"go_logs/pkg/logger"
 	"log"
@@ -13,9 +14,10 @@ type UdpServer struct {
 	host   string
 	port   int
 	logger *logger.Logger
+	mfile  *file.Mfile
 }
 
-func New(ctx context.Context, logger *logger.Logger) {
+func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 	cfg := config.Get()
 	host := cfg.UdpHost
 	port := cfg.UdpPort
@@ -24,6 +26,7 @@ func New(ctx context.Context, logger *logger.Logger) {
 		host:   host,
 		port:   port,
 		logger: logger,
+		mfile:  mfile,
 	}
 
 	go u.udp_start(ctx)
@@ -53,8 +56,8 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 	// log.Printf("r:%d addr=%s, r:%s ", len, addr, string(buf[:len]))
 	// u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
 	// conn.WriteToUDP(append([]byte("Hello, you said: "), buf[:readLen]...), addr) // пишем в сокет
-	s := string(buf[:len])
-	u.save(s)
+	// s := string(buf[:len])
+	u.savebuf(buf)
 }
 
 func (u *UdpServer) udp_start(ctx context.Context) {
