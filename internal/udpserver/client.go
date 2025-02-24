@@ -2,6 +2,7 @@ package udpserver
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"time"
@@ -34,7 +35,9 @@ func (u *UdpServer) send() {
 	defer conn.Close()
 
 	// write a message to server
-	message := []byte("\r\n xxxxxxxxxxx aaaaaaaaaaaaa ccccccccccc 0000000000000 549305893458 ")
+	s := fmt.Sprintf("\r\n xxxxxxxxxxx aaaaaaaaaaaaa ccccccccccc 0000000000000 xxxxxxxxxxxxxxx bbbbbbbbbbbbbbb xxxxxxxxxx %d", u.cnt)
+	u.cnt++
+	message := []byte(s)
 
 	_, err = conn.Write(message)
 

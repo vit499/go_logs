@@ -3,6 +3,7 @@ package file
 import (
 	"context"
 	"fmt"
+	"go_logs/pkg/bench"
 	"go_logs/pkg/logger"
 	"go_logs/pkg/utils"
 	"io"
@@ -16,7 +17,7 @@ type Mfile struct {
 }
 
 const (
-	maxSize int = 1000
+	maxSize int = 1000000 // 1048576
 )
 
 func New(ctx context.Context, logger *logger.Logger) *Mfile {
@@ -31,41 +32,49 @@ func New(ctx context.Context, logger *logger.Logger) *Mfile {
 func (m *Mfile) get_new_filename() string {
 	t := utils.GetTime()
 	fname := fmt.Sprintf("logs/%s.log", t)
-	m.logger.Info().Msgf(" new file: %s", fname)
+	// m.logger.Info().Msgf(" new file: %s", fname)
 	return fname
 }
 
-func (m *Mfile) Write1(buf []byte) {
-	var f *os.File
-	var err error
-	if m.fname == "" {
-		m.fname = m.get_new_filename()
-		f, err = os.OpenFile(m.fname, os.O_CREATE|os.O_WRONLY, 0666)
-		if err != nil {
-			m.logger.Info().Msgf("err open file, %v", err)
-			return
-		}
-	} else {
-		f, err = os.OpenFile(m.fname, os.O_APPEND|os.O_WRONLY, 0666)
-		if err != nil {
-			m.logger.Info().Msgf("err open file, %v", err)
-			return
-		}
-	}
-	defer f.Close()
-	f.Write(buf)
+//===================
 
-	fi, err := f.Stat()
+func (m *Mfile) Copy1() {
+	defer bench.Duration(bench.Track("copied "))
+	fsrc, err := os.OpenFile(m.fname, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
-		m.logger.Info().Msgf("err get file size, %v", err)
+		m.logger.Info().Msgf("err open file, %v", err)
 		return
 	}
-	sz := fi.Size()
-	if sz > int64(maxSize) {
-		m.logger.Info().Msgf("close file, sz = %d", sz)
-		m.fname = "" // превышен размер, в следующий раз будет создан другой файл
+	// m.logger.Info().Msgf("copy file")
+	fname1 := m.get_new_filename()
+	fdst, err := os.OpenFile(fname1, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		m.logger.Info().Msgf("err create file, %v", err)
+		return
 	}
 
+	defer func() {
+		fsrc.Close()
+		fdst.Close()
+	}()
+
+	sz1 := maxSize + 100000
+	b := make([]byte, sz1)
+	sz := 0
+	for {
+		len, err := fsrc.Read(b)
+
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println(err)
+			}
+			// m.logger.Info().Msgf("read, len=%d", len)
+			break
+		}
+		fdst.Write(b[:len])
+		sz = sz + len
+	}
+	// m.logger.Info().Msgf("copied, sz=%d", sz)
 }
 
 //====================
@@ -75,7 +84,7 @@ func (m *Mfile) Write(buf []byte) {
 	var err error
 
 	if m.ended {
-		m.logger.Info().Msgf("clear file")
+		// m.logger.Info().Msgf("clear file")
 		f, err = os.OpenFile(m.fname, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0666)
 		if err != nil {
 			m.logger.Info().Msgf("err open file, %v", err)
@@ -93,37 +102,19 @@ func (m *Mfile) Write(buf []byte) {
 	defer f.Close()
 	f.Write(buf)
 
-	fi, err := f.Stat()
+	fi, err := f.Stat() // проверяем размер файла
 	if err != nil {
 		m.logger.Info().Msgf("err get file size, %v", err)
 		return
 	}
-	sz := fi.Size()
-	if sz > int64(maxSize) {
-		m.logger.Info().Msgf("copy file, sz = %d", sz)
-		fname1 := m.get_new_filename()
-		f1, err := os.OpenFile(fname1, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0666)
-		if err != nil {
-			m.logger.Info().Msgf("err create file, %v", err)
-			return
-		}
-		// f.Close()
-		// err := os.Rename(m.fname, fname1)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// }
+	sizeFile := fi.Size()
 
-		defer f1.Close()
-		m.ended = true
-		_, err = io.Copy(f1, f)
-		if err != nil {
-			m.logger.Info().Msgf("err copy file, %v", err)
-		}
-
-		// _, err = f.Seek(0, 0)
-
-		// err = f.Truncate(0)
-
+	if sizeFile < int64(maxSize) {
+		return
 	}
+	f.Close()
+
+	m.ended = true
+	m.Copy1() // переносим в другой файл при переполнении
 
 }

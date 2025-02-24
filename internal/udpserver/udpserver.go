@@ -15,6 +15,7 @@ type UdpServer struct {
 	port   int
 	logger *logger.Logger
 	mfile  *file.Mfile
+	cnt    int
 }
 
 func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
@@ -27,10 +28,11 @@ func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 		port:   port,
 		logger: logger,
 		mfile:  mfile,
+		cnt:    100,
 	}
 
 	go u.udp_start(ctx)
-	go u.client(ctx)
+	// go u.client(ctx)
 }
 
 func (u *UdpServer) udp_server() {
