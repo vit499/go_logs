@@ -22,7 +22,7 @@ func Get(file string) *Logger {
 	once.Do(func() {
 		lumberjackLogger := &lumberjack.Logger{
 			Filename:   file,
-			MaxSize:    1, // megabytes
+			MaxSize:    10, // megabytes
 			MaxBackups: 3,
 		}
 		consoleWriter := zerolog.New(os.Stdout)

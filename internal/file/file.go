@@ -23,7 +23,7 @@ const (
 func New(ctx context.Context, logger *logger.Logger) *Mfile {
 	m := &Mfile{
 		ended:  true,
-		fname:  "logs/log1.log",
+		fname:  "logs/rx.log",
 		logger: logger,
 	}
 	return m
