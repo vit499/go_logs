@@ -30,7 +30,7 @@ func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 	}
 
 	go u.udp_start(ctx)
-	// go u.client(ctx)
+	go u.client(ctx)
 }
 
 func (u *UdpServer) udp_server() {
@@ -57,7 +57,7 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 	// u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
 	// conn.WriteToUDP(append([]byte("Hello, you said: "), buf[:readLen]...), addr) // пишем в сокет
 	// s := string(buf[:len])
-	u.savebuf(buf)
+	u.savebuf(buf[:len])
 }
 
 func (u *UdpServer) udp_start(ctx context.Context) {
