@@ -8,14 +8,20 @@ import (
 	"go_logs/pkg/logger"
 	"log"
 	"net"
+	"sync"
 )
 
 type UdpServer struct {
-	host   string
-	port   int
-	logger *logger.Logger
-	mfile  *file.Mfile
-	cnt    int
+	host    string
+	port    int
+	logger  *logger.Logger
+	mfile   *file.Mfile
+	cnt     int
+	cmd     string
+	mux     sync.Mutex
+	cnt_ans int
+	addr_nv *net.UDPAddr
+	addr_pc *net.UDPAddr
 }
 
 func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
@@ -24,24 +30,27 @@ func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 	port := cfg.UdpPort
 
 	u := &UdpServer{
-		host:   host,
-		port:   port,
-		logger: logger,
-		mfile:  mfile,
-		cnt:    100,
+		host:    host,
+		port:    port,
+		logger:  logger,
+		mfile:   mfile,
+		cnt:     100,
+		cmd:     "",
+		cnt_ans: 0,
 	}
 
 	go u.udp_start(ctx)
 	// go u.client(ctx)
+	go u.ans(ctx)
 }
 
-func (u *UdpServer) udp_server() {
-	u.logger.Info().Msgf("udp server starting %s:%d", u.host, u.port)
-	listener, _ := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(u.host), Port: u.port}) // открываем слушающий UDP-сокет
-	for {
-		u.handleClient(listener) // обрабатываем запрос клиента
-	}
-}
+// func (u *UdpServer) udp_server() {
+// 	u.logger.Info().Msgf("udp server starting %s:%d", u.host, u.port)
+// 	listener, _ := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP(u.host), Port: u.port}) // открываем слушающий UDP-сокет
+// 	for {
+// 		u.handleClient(listener) // обрабатываем запрос клиента
+// 	}
+// }
 
 func (u *UdpServer) handleClient(conn *net.UDPConn) {
 	buf := make([]byte, 128) // буфер для чтения клиентских данных
@@ -59,7 +68,19 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 	// u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
 	// conn.WriteToUDP(append([]byte("Hello, you said: "), buf[:readLen]...), addr) // пишем в сокет
 	// s := string(buf[:len])
-	u.savebuf(buf[:len])
+	u.savebuf(buf[:len], addr)
+
+	if u.cmd != "" {
+
+		bufcmd := []byte(u.cmd)
+		_, err := conn.WriteToUDP(bufcmd, u.addr_nv) // пишем в сокет
+		if err != nil {
+			u.logger.Info().Msgf("err send ans, err=%v ", err)
+		}
+		u.logger.Info().Msgf("send cmd to addr=%s, cmd:%s ", addr, string(bufcmd))
+		u.cmd = ""
+		u.cnt_ans = 0
+	}
 }
 
 func (u *UdpServer) udp_start(ctx context.Context) {
