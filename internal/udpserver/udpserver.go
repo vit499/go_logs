@@ -20,8 +20,10 @@ type UdpServer struct {
 	cmd     string
 	mux     sync.Mutex
 	cnt_ans int
+	cnt_pc  int
 	addr_nv *net.UDPAddr
 	addr_pc *net.UDPAddr
+	pc_en   bool
 }
 
 func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
@@ -37,6 +39,8 @@ func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 		cnt:     100,
 		cmd:     "",
 		cnt_ans: 0,
+		cnt_pc:  0,
+		pc_en:   false,
 	}
 
 	go u.udp_start(ctx)
@@ -61,25 +65,22 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 		return
 	}
 
-	if len > 10000 {
-		u.logger.Info().Msgf("rec %s", addr) // чтобы не ругался на addr
-	}
-	// log.Printf("r:%d addr=%s, r:%s ", len, addr, string(buf[:len]))
-	// u.logger.Info().Msgf("rec %s mes:%s", addr, string(buf[:len]))
-	// conn.WriteToUDP(append([]byte("Hello, you said: "), buf[:readLen]...), addr) // пишем в сокет
-	// s := string(buf[:len])
-	u.savebuf(buf[:len], addr)
+	from_pc := u.savebuf(buf[:len], addr)
 
 	if u.cmd != "" {
 
 		bufcmd := []byte(u.cmd)
-		_, err := conn.WriteToUDP(bufcmd, u.addr_nv) // пишем в сокет
-		if err != nil {
-			u.logger.Info().Msgf("err send ans, err=%v ", err)
-		}
+		// _, err := conn.WriteToUDP(bufcmd, u.addr_nv) // пишем в сокет
+		// if err != nil {
+		// 	u.logger.Info().Msgf("err send ans, err=%v ", err)
+		// }
+		u.send(conn, bufcmd, u.addr_nv)
 		u.logger.Info().Msgf("send cmd to addr=%s, cmd:%s ", addr, string(bufcmd))
 		u.cmd = ""
 		u.cnt_ans = 0
+	}
+	if from_pc == 0 && u.pc_en { // получено от nv, отправляется в pc
+		u.send(conn, buf[:len], u.addr_pc)
 	}
 }
 
@@ -113,5 +114,12 @@ func (u *UdpServer) udp_start(ctx context.Context) {
 			u.handleClient(ln)
 		}
 		// wait for UDP client to connect
+	}
+}
+
+func (u *UdpServer) send(conn *net.UDPConn, buf []byte, addr *net.UDPAddr) {
+	_, err := conn.WriteToUDP(buf, addr) // пишем в сокет
+	if err != nil {
+		u.logger.Info().Msgf("err send ans, err=%v ", err)
 	}
 }

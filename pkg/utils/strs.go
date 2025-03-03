@@ -108,3 +108,20 @@ func Hex2Str(buf []int, len_src int) string {
 	s := string(strBuf)
 	return s
 }
+
+func StrNCmp(b1 []byte, b2 []byte) int {
+	len1 := len(b1)
+	len2 := len(b2)
+	len := 0
+	if len1 >= len2 {
+		len = len2
+	} else {
+		len = len1
+	}
+	for i := 0; i < len; i++ {
+		if b1[i] != b2[i] {
+			return 1
+		}
+	}
+	return 0
+}
