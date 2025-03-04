@@ -18,13 +18,13 @@ func (u *UdpServer) ans(ctx context.Context) {
 		case <-ticker1.C:
 			u.mux.Lock()
 			u.cnt_ans++
-			if u.cnt_ans > 3 {
+			if u.cnt_ans > 8 { // 90sec, отправка команды выключить лог
 				// u.logger.Info().Msgf("ans timer")
 				u.cmd = "test 00"
 			}
 			u.mux.Unlock()
 			u.cnt_pc++
-			if u.cnt_pc > 15 {
+			if u.cnt_pc > 15 { // 2.5min, компьютер не на связи
 				u.cnt_pc = 0
 				u.pc_en = false
 			}

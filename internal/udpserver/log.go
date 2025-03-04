@@ -13,6 +13,7 @@ func (u *UdpServer) save(s string) {
 func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 	// u.logger.Info().Msgf(s)
 	from_pc := false
+	pc_ping := false
 
 	if len(buf) < 2 { // 's' - ping from nv
 		u.addr_nv = addr
@@ -26,6 +27,7 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 
 	if utils.StrNCmp(buf, b_pcping) == 0 { // ping from pc
 		from_pc = true
+		pc_ping = true
 		// u.logger.Info().Msgf(" pcping ")
 	} else if utils.StrNCmp(buf, b_osdp_log_on) == 0 { // это начало лога, приходит от nv
 		u.mux.Lock()
@@ -51,7 +53,9 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 	} else {
 		u.addr_nv = addr
 	}
-	u.mfile.Write(buf)
+	if !pc_ping {
+		u.mfile.Write(buf)
+	}
 	if from_pc {
 		return (1)
 	}
