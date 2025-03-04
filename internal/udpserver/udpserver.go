@@ -75,7 +75,9 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 		// 	u.logger.Info().Msgf("err send ans, err=%v ", err)
 		// }
 		u.send(conn, bufcmd, u.addr_nv)
-		u.logger.Info().Msgf("send cmd to addr=%s, cmd:%s ", addr, string(bufcmd))
+		if u.cmd != "test 00" {
+			u.logger.Info().Msgf("send cmd to addr=%s, cmd:%s ", addr, string(bufcmd))
+		}
 		u.cmd = ""
 		u.cnt_ans = 0
 	}
