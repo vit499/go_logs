@@ -17,7 +17,7 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 
 	if len(buf) < 2 { // 's' - ping from nv
 		u.addr_nv = addr
-		return (0)
+		return (2) // чтобы не отправлять в компьютер ping от nv
 	}
 	b_osdp_log_on := []byte("osdp_log_on")
 	b_cmd_for_ulog := []byte("Cmd_for_ulog")
