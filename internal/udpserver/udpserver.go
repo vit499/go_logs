@@ -61,8 +61,12 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 
 	len, addr, err := conn.ReadFromUDP(buf) // читаем из сокета
 	if err != nil {
-		fmt.Println(err)
-		return
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			// Это таймаут, можно попробовать снова
+		} else {
+			fmt.Println(err)
+			return
+		}
 	}
 
 	from_pc := u.savebuf(buf[:len], addr)
