@@ -30,7 +30,7 @@ func New(ctx context.Context, logger *logger.Logger) *Mfile {
 }
 
 func (m *Mfile) get_new_filename() string {
-	t := utils.GetTime()
+	t := utils.GetDayTime()
 	fname := fmt.Sprintf("logs/%s.log", t)
 	// m.logger.Info().Msgf(" new file: %s", fname)
 	return fname

@@ -57,7 +57,7 @@ func New(ctx context.Context, logger *logger.Logger, mfile *file.Mfile) {
 // }
 
 func (u *UdpServer) handleClient(conn *net.UDPConn) {
-	buf := make([]byte, 128) // буфер для чтения клиентских данных
+	buf := make([]byte, 1024) // буфер для чтения клиентских данных
 
 	len, addr, err := conn.ReadFromUDP(buf) // читаем из сокета
 	if err != nil {
@@ -69,7 +69,7 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 		}
 	}
 
-	from_pc := u.savebuf(buf[:len], addr)
+	dst, from_pc := u.savebuf(buf[:len], addr)
 
 	if u.cmd != "" {
 
@@ -86,7 +86,7 @@ func (u *UdpServer) handleClient(conn *net.UDPConn) {
 		u.cnt_ans = 0
 	}
 	if from_pc == 0 && u.pc_en { // получено от nv, отправляется в pc
-		u.send(conn, buf[:len], u.addr_pc)
+		u.send(conn, dst, u.addr_pc)
 	}
 }
 

@@ -10,18 +10,21 @@ func (u *UdpServer) save(s string) {
 	// u.mfile.Write()
 }
 
-func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
+func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 	// u.logger.Info().Msgf(s)
 	from_pc := false
 	pc_ping := false
+	dst := make([]byte, len(buf))
 
+	copy(dst, buf)
 	if len(buf) < 2 { // 's' - ping from nv
 		u.addr_nv = addr
-		return (2) // чтобы не отправлять в компьютер ping от nv
+		return dst, 2 // чтобы не отправлять в компьютер ping от nv
 	}
 	b_osdp_log_on := []byte("osdp_log_on")
 	b_cmd_for_ulog := []byte("Cmd_for_ulog")
 	b_pcping := []byte("pcping")
+	b_time := []byte("\r\ntime")
 
 	// u.logger.Info().Msgf(" rec: %s", string(buf))
 
@@ -44,6 +47,13 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 		u.cnt_ans = 0
 		u.mux.Unlock()
 		u.logger.Info().Msgf("Cmd_for_ulog %s", str_cmd)
+	} else if utils.StrNCmp(buf, b_time) == 0 { // нужно добавить время
+		buf_time := utils.GetTime() //  \r\ntimexxxxx -> \r\nhh:mm:ss
+		// copy(dst, dst1)
+		len_time := len(buf_time)
+		for i := 0; i < len_time; i++ {
+			dst[i] = buf_time[i]
+		}
 	}
 
 	if from_pc == true {
@@ -54,10 +64,10 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) int {
 		u.addr_nv = addr
 	}
 	if !pc_ping {
-		u.mfile.Write(buf)
+		u.mfile.Write(dst)
 	}
 	if from_pc {
-		return (1)
+		return dst, 1
 	}
-	return (0)
+	return dst, 0
 }

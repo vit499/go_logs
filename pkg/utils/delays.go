@@ -15,9 +15,17 @@ func D_1s(sec int) {
 	time.Sleep(time.Duration(sec) * time.Second)
 }
 
-func GetTime() string {
+func GetDayTime() string {
 	// dv_time=20140101120029
 	t := time.Now()
 	s1 := fmt.Sprintf("%04d%02d%02d%02d%02d%02d", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
 	return s1
+}
+
+func GetTime() []byte {
+	// dv_time=20140101120029
+	t := time.Now()
+	s1 := fmt.Sprintf("\r\n%02d:%02d:%02d ", t.Hour(), t.Minute(), t.Second())
+	b := []byte(s1)
+	return b
 }
