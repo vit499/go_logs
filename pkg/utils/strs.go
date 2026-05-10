@@ -125,3 +125,24 @@ func StrNCmp(b1 []byte, b2 []byte) int {
 	}
 	return 0
 }
+
+// \r\n01:02:03
+func StrNCmpTime(b1 []byte) int {
+	len1 := len(b1)
+	if len1 < 10 {
+		return 1
+	}
+	if b1[0] != 0x0d {
+		return 1
+	}
+	if b1[1] != 0x0a {
+		return 1
+	}
+	if b1[4] != 0x3a { // ':'
+		return 1
+	}
+	if b1[7] != 0x3a { // ':'
+		return 1
+	}
+	return 0
+}

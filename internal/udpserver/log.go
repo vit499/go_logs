@@ -24,7 +24,6 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 	b_osdp_log_on := []byte("osdp_log_on")
 	b_cmd_for_ulog := []byte("Cmd_for_ulog")
 	b_pcping := []byte("pcping")
-	b_time := []byte("\r\ntime")
 
 	// u.logger.Info().Msgf(" rec: %s", string(buf))
 
@@ -47,9 +46,8 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 		u.cnt_ans = 0
 		u.mux.Unlock()
 		u.logger.Info().Msgf("Cmd_for_ulog %s", str_cmd)
-	} else if utils.StrNCmp(buf, b_time) == 0 { // нужно добавить время
-		buf_time := utils.GetTime() //  \r\ntimexxxxx -> \r\nhh:mm:ss
-		// copy(dst, dst1)
+	} else if utils.StrNCmpTime(buf) == 0 { // нужно изменить время
+		buf_time := utils.GetTime() //   \r\nhh:mm:ss
 		len_time := len(buf_time)
 		for i := 0; i < len_time; i++ {
 			dst[i] = buf_time[i]
