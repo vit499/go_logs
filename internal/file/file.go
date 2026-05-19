@@ -101,7 +101,7 @@ func (m *Mfile) Write(buf []byte) {
 
 	defer f.Close()
 	if buf[0] == 0x0d {
-		buf1 := utils.GetTime()
+		buf1 := utils.GetDayTime_()
 		_, err = f.Write(buf1)
 		if err != nil {
 			m.logger.Info().Msgf("err append file, %v", err)
