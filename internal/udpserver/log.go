@@ -37,6 +37,8 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 		u.cnt_ans = 0
 		u.mux.Unlock()
 		u.logger.Info().Msgf(" osdp_log_on ")
+		buf_time := utils.GetDayTime_()
+		u.mfile.Write(buf_time)
 	} else if utils.StrNCmp(buf, b_cmd_for_ulog) == 0 { // команда от pc
 		from_pc = true
 		len := len(buf) - 2
