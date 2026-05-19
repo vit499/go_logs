@@ -52,6 +52,24 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 		for i := 0; i < len_time; i++ {
 			dst[i] = buf_time[i]
 		}
+	} else if utils.StrNCmpOsdp(buf) == 0 { // нужно добавить время
+		buf_time := utils.GetTime() //   \r\nhh:mm:ss
+		len_time := len(buf_time)
+		for i := 0; i < len_time; i++ {
+			dst[i] = buf_time[i]
+		}
+		for i := 0; i < len(buf); i++ {
+			dst[i+len_time] = buf[i]
+		}
+	} else if utils.StrNCmpStart(buf) == 0 { // нужно добавить дату
+		buf_time := utils.GetDayTime_() //   \r\nhh:mm:ss
+		len_time := len(buf_time)
+		for i := 0; i < len_time; i++ {
+			dst[i] = buf_time[i]
+		}
+		for i := 0; i < len(buf); i++ {
+			dst[i+len_time] = buf[i]
+		}
 	}
 
 	if from_pc == true {

@@ -146,3 +146,45 @@ func StrNCmpTime(b1 []byte) int {
 	}
 	return 0
 }
+
+// \r[o]
+func StrNCmpOsdp(b1 []byte) int {
+	len1 := len(b1)
+	if len1 < 5 {
+		return 1
+	}
+	if b1[0] != 0x0d {
+		return 1
+	}
+	if b1[1] != 0x5b { // '['
+		return 1
+	}
+	if b1[2] != 0x6f { // 'o'
+		return 1
+	}
+	if b1[3] != 0x5d { // ']'
+		return 1
+	}
+	return 0
+}
+
+// \r_Start
+func StrNCmpStart(b1 []byte) int {
+	len1 := len(b1)
+	if len1 < 9 {
+		return 1
+	}
+	if b1[0] != 0x0d {
+		return 1
+	}
+	if b1[1] != 0x20 { // ' '
+		return 1
+	}
+	if b1[2] != 0x53 { // 'S'
+		return 1
+	}
+	if b1[3] != 0x74 { // 't'
+		return 1
+	}
+	return 0
+}

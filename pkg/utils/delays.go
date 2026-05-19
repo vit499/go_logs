@@ -22,6 +22,13 @@ func GetDayTime() string {
 	return s1
 }
 
+func GetDayTime_() string {
+	loc := time.FixedZone("EET", 2*60*60)
+	t := time.Now().In(loc)
+	s1 := fmt.Sprintf("\r\n%04d%02d%02d%02d%02d%02d ", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+	return s1
+}
+
 // \r\nhh:mm:ss_
 func GetTime() []byte {
 	loc := time.FixedZone("EET", 2*60*60)
