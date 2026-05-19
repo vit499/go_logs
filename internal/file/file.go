@@ -82,6 +82,7 @@ func (m *Mfile) Copy1() {
 func (m *Mfile) Write(buf []byte) {
 	var f *os.File
 	var err error
+	fnew := false
 
 	if m.ended {
 		// m.logger.Info().Msgf("clear file")
@@ -91,6 +92,7 @@ func (m *Mfile) Write(buf []byte) {
 			return
 		}
 		m.ended = false
+		fnew = true
 	} else {
 		f, err = os.OpenFile(m.fname, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 		if err != nil {
@@ -100,6 +102,22 @@ func (m *Mfile) Write(buf []byte) {
 	}
 
 	defer f.Close()
+	if fnew {
+		buf1 := utils.GetDayTime_()
+		_, err = f.Write(buf1)
+		if err != nil {
+			m.logger.Info().Msgf("err append file, %v", err)
+			return
+		}
+	} else {
+		buf1 := utils.GetTime()
+		_, err = f.Write(buf1)
+		if err != nil {
+			m.logger.Info().Msgf("err append file, %v", err)
+			return
+		}
+	}
+
 	_, err = f.Write(buf)
 	if err != nil {
 		m.logger.Info().Msgf("err append file, %v", err)

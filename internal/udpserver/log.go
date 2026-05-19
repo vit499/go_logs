@@ -37,14 +37,6 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 		u.cnt_ans = 0
 		u.mux.Unlock()
 		u.logger.Info().Msgf(" osdp_log_on ")
-		buf_time := utils.GetDayTime_() //   \r\nhh:mm:ss
-		len_time := len(buf_time)
-		for i := 0; i < len_time; i++ {
-			dst[i] = buf_time[i]
-		}
-		for i := 0; i < len(buf); i++ {
-			dst[i+len_time] = buf[i]
-		}
 	} else if utils.StrNCmp(buf, b_cmd_for_ulog) == 0 { // команда от pc
 		from_pc = true
 		len := len(buf) - 2
@@ -59,24 +51,6 @@ func (u *UdpServer) savebuf(buf []byte, addr *net.UDPAddr) ([]byte, int) {
 		len_time := len(buf_time)
 		for i := 0; i < len_time; i++ {
 			dst[i] = buf_time[i]
-		}
-	} else if utils.StrNCmpOsdp(buf) == 0 { // нужно добавить время
-		buf_time := utils.GetTime() //   \r\nhh:mm:ss
-		len_time := len(buf_time)
-		for i := 0; i < len_time; i++ {
-			dst[i] = buf_time[i]
-		}
-		for i := 0; i < len(buf); i++ {
-			dst[i+len_time] = buf[i]
-		}
-	} else if utils.StrNCmpStart(buf) == 0 { // нужно добавить дату
-		buf_time := utils.GetDayTime_() //   \r\nhh:mm:ss
-		len_time := len(buf_time)
-		for i := 0; i < len_time; i++ {
-			dst[i] = buf_time[i]
-		}
-		for i := 0; i < len(buf); i++ {
-			dst[i+len_time] = buf[i]
 		}
 	}
 
